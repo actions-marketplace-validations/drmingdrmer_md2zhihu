@@ -1,7 +1,10 @@
 import re
 
+from ...types import ASTNode
+from ...types import ASTNodes
 
-def join_math_block(nodes):
+
+def join_math_block(nodes: ASTNodes) -> None:
     """
     A tex segment may spans several paragraph:
 
@@ -21,13 +24,13 @@ def join_math_block(nodes):
     join_math_text(nodes)
 
 
-def parse_math(nodes):
+def parse_math(nodes: ASTNodes) -> ASTNodes:
     """
     Extract all math segment such as ``$$ ... $$`` from a text and build a
     math_block or math_inline node.
     """
 
-    children = []
+    children: ASTNodes = []
 
     for n in nodes:
         if "children" in n:
@@ -42,7 +45,7 @@ def parse_math(nodes):
     return children
 
 
-def join_math_text(nodes):
+def join_math_text(nodes: ASTNodes) -> None:
     i = 0
     while i < len(nodes) - 1:
         n1 = nodes[i]
@@ -68,7 +71,7 @@ def join_math_text(nodes):
             i += 1
 
 
-def extract_math(n):
+def extract_math(n: ASTNode) -> ASTNodes:
     """
     Extract ``$$ ... $$`` or ``$ .. $` from a text node and build a new node.
     The original text node is split into multiple segments.
@@ -76,11 +79,11 @@ def extract_math(n):
     The math is a block if it is a paragraph.
     Otherwise, it is an inline math.
     """
-    children = []
+    children: ASTNodes = []
 
     math_regex = r"([$]|[$][$])([^$].*?)\1"
 
-    t = n["text"]
+    t: str = n["text"]
     while True:
         match = re.search(math_regex, t, flags=re.DOTALL)
         if match:
@@ -88,7 +91,7 @@ def extract_math(n):
             children.append({"type": "math_inline", "text": match.groups()[1]})
             t = t[match.end() :]
 
-            left = children[-2]["text"]
+            left: str = children[-2]["text"]
             right = t
             if (left == "" or left.endswith("\n\n")) and (right == "" or right.startswith("\n")):
                 children[-1]["type"] = "math_block"
