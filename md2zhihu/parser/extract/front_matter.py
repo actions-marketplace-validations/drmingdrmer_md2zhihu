@@ -1,6 +1,12 @@
 import re
+from typing import Any
+from typing import Dict
+from typing import Optional
+from typing import Tuple
 
 import yaml
+
+from ...types import RefDict
 
 
 class FrontMatter(object):
@@ -8,15 +14,15 @@ class FrontMatter(object):
     The font matter is the yaml enclosed between `---` at the top of a markdown.
     """
 
-    def __init__(self, front_matter_text: str):
-        self.text = front_matter_text
-        self.data = yaml.safe_load(front_matter_text)
+    def __init__(self, front_matter_text: str) -> None:
+        self.text: str = front_matter_text
+        self.data: Dict[str, Any] = yaml.safe_load(front_matter_text)
 
-    def get_refs(self, platform: str) -> dict:
+    def get_refs(self, platform: str) -> RefDict:
         """
         Get refs from front matter.
         """
-        dic = {}
+        dic: RefDict = {}
 
         meta = self.data
 
@@ -39,8 +45,8 @@ class FrontMatter(object):
         return dic
 
 
-def extract_front_matter(cont):
-    meta = None
+def extract_front_matter(cont: str) -> Tuple[str, Optional[FrontMatter]]:
+    meta: Optional[FrontMatter] = None
     m = re.match(r"^ *--- *\n(.*?)\n---\n", cont, flags=re.DOTALL | re.UNICODE)
     if m:
         cont = cont[m.end() :]
