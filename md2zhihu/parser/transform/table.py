@@ -1,33 +1,34 @@
 import re
-from typing import List
 
 from ...renderer import MDRender
 from ...renderer import RenderNode
+from ...types import ASTNode
+from ...types import ASTNodes
 from ..mistune_parser import new_parser
 
 
-def parse_in_list_tables(nodes) -> List[dict]:
+def parse_in_list_tables(nodes: ASTNodes) -> ASTNodes:
     """
     mistune does not parse table in list item.
     We need to recursively fix it.
     """
 
-    rst = []
+    rst: ASTNodes = []
     for n in nodes:
         if "children" in n:
             n["children"] = parse_in_list_tables(n["children"])
 
-        nodes = convert_paragraph_table(n)
-        rst.extend(nodes)
+        new_nodes = convert_paragraph_table(n)
+        rst.extend(new_nodes)
 
     return rst
 
 
-def convert_paragraph_table(node: dict) -> List[dict]:
+def convert_paragraph_table(node: ASTNode) -> ASTNodes:
     """
     Parse table text in a paragraph and returns the ast of parsed table.
 
-    :return List[dict]: a list of ast nodes.
+    :return: a list of ast nodes.
     """
 
     if node["type"] != "paragraph":
@@ -42,7 +43,7 @@ def convert_paragraph_table(node: dict) -> List[dict]:
     if c0["type"] != "text":
         return [node]
 
-    txt = c0["text"]
+    txt: str = c0["text"]
 
     table_reg = r" {0,3}\|(.+)\n *\|( *[-:]+[-| :]*)\n((?: *\|.*(?:\n|$))*)\n*"
 
@@ -53,7 +54,7 @@ def convert_paragraph_table(node: dict) -> List[dict]:
         partialmd = "".join(partialmd_lines)
 
         parser = new_parser()
-        new_children = parser(partialmd)
+        new_children: ASTNodes = parser(partialmd)
 
         return new_children
     else:
