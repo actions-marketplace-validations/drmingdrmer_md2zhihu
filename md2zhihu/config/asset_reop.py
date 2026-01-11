@@ -1,6 +1,7 @@
 import hashlib
 import os
 import re
+from typing import Optional
 
 import k3git
 from k3handy import CMD_RAISE_STDOUT
@@ -11,12 +12,12 @@ from ..utils import msg
 
 
 class AssetRepo(object):
-    is_local = False
+    is_local: bool = False
 
-    def __init__(self, repo_url, cdn=True):
+    def __init__(self, repo_url: str, cdn: bool = True) -> None:
         #  TODO: test rendering md rendering with pushed assets
 
-        self.cdn = cdn
+        self.cdn: bool = cdn
 
         repo_url = self.parse_shortcut_repo_url(repo_url)
 
@@ -35,7 +36,7 @@ class AssetRepo(object):
             f.get("branch"),
         )
 
-        self.url = url
+        self.url: str = url
 
         url_patterns = {
             "github.com": "https://raw.githubusercontent.com/{user}/{repo}/{branch}/{path}",
@@ -52,18 +53,18 @@ class AssetRepo(object):
             #  strip '@'
             branch = branch[1:]
 
-        self.host = host
-        self.user = user
-        self.repo = repo
-        self.branch = branch
+        self.host: Optional[str] = host
+        self.user: Optional[str] = user
+        self.repo: Optional[str] = repo
+        self.branch: str = branch
 
         ptn = url_patterns[host]
         if self.cdn and host == "github.com":
             ptn = cdn_patterns[host]
 
-        self.path_pattern = ptn.format(user=user, repo=repo, branch=branch, path="{path}")
+        self.path_pattern: str = ptn.format(user=user, repo=repo, branch=branch, path="{path}")
 
-    def parse_shortcut_repo_url(self, repo_url):
+    def parse_shortcut_repo_url(self, repo_url: str) -> str:
         """
         If repo_url is a shortcut specifying to use local git repo remote url,
         convert repo shortcut to url.
@@ -79,6 +80,7 @@ class AssetRepo(object):
         g = k3git.Git(k3git.GitOpt(), cwd=".")
 
         is_shortcut = False
+        u: str = ""
 
         # ".": use cwd git
         # ".@foo_branch": use cwd git and specified branch
@@ -101,7 +103,7 @@ class AssetRepo(object):
 
         return repo_url
 
-    def get_remote_url(self, remote=None):
+    def get_remote_url(self, remote: Optional[str] = None) -> str:
         g = k3git.Git(k3git.GitOpt(), cwd=".")
 
         if remote is None:
@@ -111,10 +113,10 @@ class AssetRepo(object):
                 # `branch` has no remote configured.
                 remote = g.cmdf("remote", flag=CMD_RAISE_STDOUT)[0]
 
-        remote_url = g.remote_get(remote, flag=[CmdFlag.RAISE])
+        remote_url: str = g.remote_get(remote, flag=[CmdFlag.RAISE])
         return remote_url
 
-    def make_default_branch(self):
+    def make_default_branch(self) -> str:
         cwd = os.getcwd().split(os.path.sep)
         cwdmd5 = hashlib.md5(to_bytes(os.getcwd())).hexdigest()
         branch = "_md2zhihu_{tail}_{md5}".format(
