@@ -1,13 +1,15 @@
 import re
+from typing import Tuple
 
 import yaml
 from k3fs import fread
 
 from ...config import Config
+from ...types import RefDict
 
 
-def load_external_refs(conf: Config) -> dict:
-    refs = {}
+def load_external_refs(conf: Config) -> RefDict:
+    refs: RefDict = {}
     for ref_path in conf.ref_files:
         fcont = fread(ref_path)
         y = yaml.safe_load(fcont)
@@ -19,10 +21,10 @@ def load_external_refs(conf: Config) -> dict:
     return refs
 
 
-def extract_ref_definitions(cont):
+def extract_ref_definitions(cont: str) -> Tuple[str, RefDict]:
     lines = cont.split("\n")
     rst = []
-    refs = {}
+    refs: RefDict = {}
     for line in lines:
         r = re.match(r"\[(.*?)\]:(.*?)$", line, flags=re.UNICODE)
         if r:
