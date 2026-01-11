@@ -2,13 +2,20 @@ import hashlib
 import os
 import re
 import shutil
+from typing import TYPE_CHECKING
+from typing import List
+from typing import Optional
 
 import urllib3
 from k3handy import pjoin
 from k3handy import to_bytes
 
+if TYPE_CHECKING:
+    from ..renderer.md_render import MDRender
+    from ..renderer.render_node import RenderNode
 
-def save_image_to_asset_dir(mdrender, rnode):
+
+def save_image_to_asset_dir(mdrender: "MDRender", rnode: "RenderNode") -> Optional[List[str]]:
     #  {'alt': 'openacid',
     #   'src': 'https://...',
     #   'title': None,
@@ -16,7 +23,7 @@ def save_image_to_asset_dir(mdrender, rnode):
 
     n = rnode.node
 
-    src = n["src"]
+    src: str = n["src"]
     if re.match(r"https?://", src):
         if not mdrender.conf.download:
             return None
